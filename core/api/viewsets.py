@@ -3,6 +3,7 @@ from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly, DjangoModelPermissions
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
 
 from core.models import PontoTuristico
 from .serializers import PontoTuristicoSerializer
@@ -15,7 +16,7 @@ class PontoTuristicoViewSet(ModelViewSet):
     permission_classes = (DjangoModelPermissions,)
     authentication_classes = (TokenAuthentication,)
     search_fields = ('nome', 'descricao','endereco__lista1')
-    lookup_field = ('id')  
+    lookup_field = 'id'  
 
     def get_queryset(self):
         id = self.request.query_params.get('id', None)
@@ -52,8 +53,16 @@ class PontoTuristicoViewSet(ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         return super(PontoTuristicoViewSet, self).partial_update(request, *args, **kwargs)
 
-    # @action(methods=['get'], detail=True)
-    # def denunciar(self, request, pk=None):
-    #     pass
+    @action(methods=['get'], detail=True)
+    def denunciar(self, request, pk=None):
+        pass
 
-    
+    @action(methods=['get'], detail=True)
+    def associa_atracoes(self, request, id):
+        atracoes = request.data['ids']
+
+        ponto = PontoTuristico.objects.get(id=id)
+        ponto.atracoes.set(atracoes)
+
+        ponto.save()
+        return ponto
